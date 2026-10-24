@@ -127,3 +127,7 @@ backend/data/
 *.db
 *.mv.db
 *.trace.db
+
+# Safety backups
+.backup_pre_merge/
+
