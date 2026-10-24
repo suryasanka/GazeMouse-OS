@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GazeMouse-OS — Accessible Webcam Head-Movement Gaming Technology</title>
+  <meta name="description" content="Experience a new way to play. GazeMouse-OS transforms natural head movements into controls for supported games, helping make gaming more accessible through 100% on-device optical tracking.">
+  <meta name="theme-color" content="#04060d">
+
+  <!-- Open Graph / Meta -->
+  <meta property="og:title" content="GazeMouse-OS — Accessible Webcam Head-Movement Gaming">
+  <meta property="og:description" content="Transforms natural head movements into controls for supported games using standard webcams and on-device computer vision.">
+  <meta property="og:type" content="website">
+
+  <!-- Custom Stylesheet & Favicon -->
+  <link rel="icon" type="image/svg+xml" href="assets/logo.svg">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Accessibility Skip Navigation Link -->
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <!-- ========================================================================
+       Navigation Bar
+       ======================================================================== -->
+  <header class="navbar" role="banner">
+    <div class="container navbar-container">
+      <a href="#hero" class="brand-link" aria-label="GazeMouse-OS Home">
+        <img src="assets/logo.svg" alt="GazeMouse-OS Emblem" class="brand-logo-img" width="36" height="36">
+        <div class="brand-text">
+          <span class="brand-title">GazeMouse-OS</span>
+          <span class="brand-tag">Assistive Gaming Tech</span>
+        </div>
+      </a>
+
+      <!-- Desktop Navigation Menu -->
+      <nav class="nav-menu" aria-label="Primary Navigation">
+        <a href="#features" class="nav-link">Features</a>
+        <a href="#how-it-works" class="nav-link">How It Works</a>
+        <a href="#games" class="nav-link">Games</a>
+        <a href="#privacy" class="nav-link">Privacy & Safety</a>
+      </nav>
+
+      <!-- Navigation Actions -->
+      <div class="nav-actions">
+        <a href="#features" class="btn btn-primary btn-sm">Explore GazeMouse-OS</a>
+        
+        <!-- Mobile Navigation Toggle Button -->
+        <button type="button" class="mobile-toggle" aria-label="Toggle mobile menu" aria-expanded="false" aria-controls="mobile-nav-drawer">
+          <span class="hamburger-line"></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile Navigation Drawer -->
+  <div id="mobile-nav-drawer" class="mobile-drawer" role="dialog" aria-modal="true" aria-label="Mobile Navigation">
+    <a href="#features" class="nav-link">Features</a>
+    <a href="#how-it-works" class="nav-link">How It Works</a>
+    <a href="#games" class="nav-link">Games</a>
+    <a href="#privacy" class="nav-link">Privacy & Safety</a>
+    <a href="#features" class="btn btn-primary" style="margin-top: 10px;">Explore GazeMouse-OS</a>
+  </div>
+
+  <!-- ========================================================================
+       Main Content
+       ======================================================================== -->
+  <main id="main-content">
+    
+    <!-- ----------------------------------------------------------------------
+         Hero Section
+         ---------------------------------------------------------------------- -->
+    <section id="hero" class="hero-section" aria-labelledby="hero-title">
+      <div class="hero-glow-sphere hero-glow-1"></div>
+      <div class="hero-glow-sphere hero-glow-2"></div>
+
+      <div class="container">
+        <div class="hero-grid">
+          
+          <!-- Hero Copy -->
+          <div class="hero-content">
+            <div class="section-label">
+              <span class="dot"></span> Next-Gen Assistive Gaming
+            </div>
+            
+            <h1 id="hero-title" class="hero-headline">
+              Your Head. <br>
+              Your Moves. <br>
+              <span class="gradient-text">Your Game.</span>
+            </h1>
+
+            <p class="hero-subtitle">
+              Experience a new way to play. GazeMouse-OS transforms natural head movements into controls for supported games, helping make gaming more accessible.
+            </p>
+
+            <div class="hero-ctas">
+              <a href="#games" class="btn btn-primary btn-lg">Discover the Experience</a>
+              <a href="#how-it-works" class="btn btn-secondary btn-lg">See How It Works</a>
+            </div>
+
+            <!-- Technical Trust Strip -->
+            <div class="hero-badges-row">
+              <div class="tech-pill">
+                <span class="tech-pill-icon">⚡</span> 100% On-Device Inference
+              </div>
+              <div class="tech-pill">
+                <span class="tech-pill-icon">🔒</span> Zero Video Transmission
+              </div>
+              <div class="tech-pill">
+                <span class="tech-pill-icon">🎯</span> Standard Webcam Ready
+              </div>
+            </div>
+          </div>
+
+          <!-- Hero Visual: Cinematic Battlestation with HUD Overlay -->
+          <div class="hero-visual-wrapper">
+            <div class="hero-visual-card">
+              <img 
+                src="assets/hero_gaming_setup.jpg" 
+                alt="Cinematic gaming setup showing an ultra-wide monitor with webcam head-tracking facial landmark visualization and subtle blue ambient illumination" 
+                class="hero-main-img"
+                width="1280" 
+                height="720"
+                loading="eager"
+              >
+              
+              <!-- Real-time HUD Corner Badge -->
+              <div class="hud-corner-tag">
+                <span class="hud-pulse-dot"></span>
+                <span>VISION PIPELINE · 478 LANDMARKS</span>
+              </div>
+
+              <!-- HUD Bottom Telemetry Bar -->
+              <div class="hud-telemetry-bottom">
+                <div class="telemetry-item">
+                  <span class="telemetry-label">Head Yaw</span>
+                  <span class="telemetry-val highlight" id="hero-telemetry-yaw">+0.0°</span>
+                </div>
+                <div class="telemetry-item">
+                  <span class="telemetry-label">Head Pitch</span>
+                  <span class="telemetry-val highlight" id="hero-telemetry-pitch">0.0°</span>
+                </div>
+                <div class="telemetry-item">
+                  <span class="telemetry-label">Tracker State</span>
+                  <span class="telemetry-val" id="hero-telemetry-state">NEUTRAL CENTER</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ----------------------------------------------------------------------
+         Interactive Head Tracking Simulator Strip
+         ---------------------------------------------------------------------- -->
+    <section class="simulator-strip" aria-label="Interactive Head Tracking Simulator">
+      <div class="container">
+        <div class="simulator-card">
+          
+          <div class="sim-info">
+            <div class="section-label">
+              <span class="dot"></span> Interactive Optical Simulator
+            </div>
+            <h3>Test the Biomechanical Tracking Logic</h3>
+            <p>
+              Hover or touch inside the virtual viewfinder below to simulate natural head movement. Observe how neutral calibration, dead-zone isolation, and intentional directional thresholding operate in real time.
+            </p>
+            <ul class="sim-features-list">
+              <li>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                <span><strong>Dead-Zone Stabilization:</strong> Suppresses involuntary head tremors and resting jitter.</span>
+              </li>
+              <li>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                <span><strong>Hysteresis Cooldown:</strong> Enforces return-to-center before re-triggering actions.</span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="sim-viewport-box">
+            <div class="sim-canvas-area" role="region" aria-label="Interactive head tracking radar preview. Move cursor inside to simulate head yaw and pitch.">
+              <!-- Visual Axis Lines -->
+              <div class="sim-axis-x"></div>
+              <div class="sim-axis-y"></div>
+              
+              <!-- 16% Calibrated Dead-Zone Circle -->
+              <div class="sim-deadzone-circle"></div>
+
+              <!-- Reticle / Head Pointer -->
+              <div class="sim-pointer-reticle" style="left: 50%; top: 50%;">
+                <div class="sim-pointer-ring"></div>
+                <div class="sim-pointer-center"></div>
+              </div>
+            </div>
+
+            <!-- Live Status Readout -->
+            <div class="sim-hud-status">
+              <span class="sim-coords">ΔX: +0.00 | ΔY: +0.00</span>
+              <span class="sim-gesture-state">NEUTRAL CENTER</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ----------------------------------------------------------------------
+         How It Works Section (Connected 3-Step Flow)
+         ---------------------------------------------------------------------- -->
+    <section id="how-it-works" class="how-section" aria-labelledby="how-title">
+      <div class="container">
+        
+        <div class="section-header">
+          <div class="section-label">
+            <span class="dot"></span> Architecture & Pipeline
+          </div>
+          <h2 id="how-title">How GazeMouse-OS Works</h2>
+          <p>
+            From raw webcam frames to responsive game inputs — a refined three-stage optical pipeline operating entirely within your browser.
+          </p>
+        </div>
+
+        <div class="steps-container">
+          <div class="steps-connector-bar" aria-hidden="true"></div>
+
+          <!-- Step 01: Detect -->
+          <article class="step-card">
+            <div class="step-badge-circle">01</div>
+            <h3 class="step-title">Detect</h3>
+            <p class="step-description">
+              The webcam detects facial landmarks to support head tracking.
+            </p>
+            <p class="step-details">
+              Using the browser's local <code>getUserMedia</code> API and Google MediaPipe Face Landmarker via WebAssembly and WebGL, the system detects 478 3D facial landmarks at 30 to 60 FPS. Anchor coordinates from the nose tip, eye corners, and chin are isolated in real time.
+            </p>
+            <span class="step-tech-tag">MediaPipe · WebAssembly · WebGL</span>
+          </article>
+
+          <!-- Step 02: Interpret -->
+          <article class="step-card">
+            <div class="step-badge-circle">02</div>
+            <h3 class="step-title">Interpret</h3>
+            <p class="step-description">
+              The application interprets head movements and recognizes supported directional gestures.
+            </p>
+            <p class="step-details">
+              Relative displacement vectors (ΔX, ΔY) are calculated against the player's personal neutral baseline, normalized by inter-pupillary distance. Exponential moving averages smooth out sensor noise, while a calibrated dead-zone filters micro-tremors and natural chin dips.
+            </p>
+            <span class="step-tech-tag">Vector Normalization · EMA Filter · Hysteresis</span>
+          </article>
+
+          <!-- Step 03: Play -->
+          <article class="step-card">
+            <div class="step-badge-circle">03</div>
+            <h3 class="step-title">Play</h3>
+            <p class="step-description">
+              Recognized gestures can control compatible games through the relevant input mechanism.
+            </p>
+            <p class="step-details">
+              Filtered gestures trigger game actions: steering lanes in 2D/3D endless runners, controlling floating dwell cursors in puzzle grids, or dispatching DirectInput scancodes through the local Windows desktop bridge to approved external game windows.
+            </p>
+            <span class="step-tech-tag">HTML5 Canvas · Three.js · Win32 DirectInput</span>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ----------------------------------------------------------------------
+         Features Section (6 Polished Feature Cards)
+         ---------------------------------------------------------------------- -->
+    <section id="features" class="features-section" aria-labelledby="features-title">
+      <div class="container">
+        
+        <div class="section-header">
+          <div class="section-label">
+            <span class="dot"></span> Core Capabilities
+          </div>
+          <h2 id="features-title">Engineered for Freedom & Precision</h2>
+          <p>
+            High-performance assistive technology designed to make gaming accessible through comfortable, customizable head interaction.
+          </p>
+        </div>
+
+        <div class="features-grid">
+          
+          <!-- Feature 1: Real-Time Face and Head Tracking -->
+          <article class="feature-card">
+            <div class="feature-icon-wrapper">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+                <line x1="9" y1="9" x2="9.01" y2="9"/>
+                <line x1="15" y1="9" x2="15.01" y2="9"/>
+              </svg>
+            </div>
+            <h3>Real-Time Face and Head Tracking</h3>
+            <p>
+              Lightweight neural inference tracking 478 3D facial landmarks at 30–60 FPS. Powered by WebAssembly and WebGL to run smoothly on standard laptops without proprietary eye-tracking hardware.
+            </p>
+            <div class="feature-meta">
+              <span>● MediaPipe Face Landmarker</span>
+            </div>
+          </article>
+
+          <!-- Feature 2: Center Calibration -->
+          <article class="feature-card">
+            <div class="feature-icon-wrapper">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="22" y1="12" x2="18" y2="12"/>
+                <line x1="6" y1="12" x2="2" y2="12"/>
+                <line x1="12" y1="6" x2="12" y2="2"/>
+                <line x1="12" y1="22" x2="12" y2="18"/>
+              </svg>
+            </div>
+            <h3>Center Calibration</h3>
+            <p>
+              Instantly zero your baseline resting posture with a single click. Adapts to your natural seating angle, tilt, and webcam mounting position so you never need to force an unnatural head angle.
+            </p>
+            <div class="feature-meta">
+              <span>● Personalized Zero-Delta Baseline</span>
+            </div>
+          </article>
+
+          <!-- Feature 3: Directional Gesture Recognition -->
+          <article class="feature-card">
+            <div class="feature-icon-wrapper">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="7 13 12 18 17 13"/>
+                <polyline points="7 6 12 11 17 6"/>
+              </svg>
+            </div>
+            <h3>Directional Gesture Recognition</h3>
+            <p>
+              Biomechanical classifier translating intentional yaw (lateral turns) and pitch (vertical deflections) into discrete actions. Hysteresis ensures you must return to neutral before triggering again.
+            </p>
+            <div class="feature-meta">
+              <span>● Anti-Double-Trigger Hysteresis</span>
+            </div>
+          </article>
+
+          <!-- Feature 4: Hands-Free Gaming Controls -->
+          <article class="feature-card">
+            <div class="feature-icon-wrapper">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="6" width="20" height="12" rx="6"/>
+                <line x1="6" y1="12" x2="10" y2="12"/>
+                <line x1="8" y1="10" x2="8" y2="14"/>
+                <line x1="15" y1="11" x2="15.01" y2="11"/>
+                <line x1="18" y1="13" x2="18.01" y2="13"/>
+              </svg>
+            </div>
+            <h3>Hands-Free Gaming Controls</h3>
+            <p>
+              Play complete games using only natural head gestures. Whether steering down high-speed 3D tracks or selecting puzzle tiles with dwell-timing, zero keyboard or mouse interaction is required.
+            </p>
+            <div class="feature-meta">
+              <span>● Native Full Hands-Free Input</span>
+            </div>
+          </article>
+
+          <!-- Feature 5: Desktop Input Bridge -->
+          <article class="feature-card">
+            <div class="feature-icon-wrapper">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4" y="4" width="16" height="16" rx="2"/>
+                <line x1="9" y1="9" x2="15" y2="15"/>
+                <line x1="15" y1="9" x2="9" y2="15"/>
+              </svg>
+            </div>
+            <h3>Desktop Input Bridge</h3>
+            <p>
+              Standalone Python 3 daemon for Windows 10/11. Translates web head gestures into DirectInput scancodes for external applications with loopback-only sockets, session tokens, and hardware emergency stop.
+            </p>
+            <div class="feature-meta">
+              <span>● Python 3 · Win32 SendInput · RFC 6455</span>
+            </div>
+          </article>
+
+          <!-- Feature 6: Accessibility-Focused Interaction -->
+          <article class="feature-card">
+            <div class="feature-icon-wrapper">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2a5 5 0 1 0 5 5 5 5 0 0 0-5-5z"/>
+                <path d="M20 21a8 8 0 1 0-16 0"/>
+              </svg>
+            </div>
+            <h3>Accessibility-Focused Interaction</h3>
+            <p>
+              Consciously built to WCAG AA guidelines with high contrast, clear keyboard focus outlines, customizable dead-zones to eliminate fatigue, auto-pause on face loss, and full keyboard fallbacks.
+            </p>
+            <div class="feature-meta">
+              <span>● WCAG AA Compliant · Auto-Pause</span>
+            </div>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ----------------------------------------------------------------------
+         Games Showcase Section (Accurate & Verified)
+         ---------------------------------------------------------------------- -->
+    <section id="games" class="games-section" aria-labelledby="games-title">
+      <div class="container">
+        
+        <div class="section-header">
+          <div class="section-label">
+            <span class="dot"></span> Verified Game Catalog
+          </div>
+          <h2 id="games-title">Supported Gaming Experiences</h2>
+          <p>
+            Explore games engineered specifically for comfortable head-movement control. Built-in titles run directly inside GazeMouse-OS, while the desktop bridge connects external desktop windows.
+          </p>
+        </div>
+
+        <!-- Category Filter Tabs -->
+        <div class="games-filter-tabs" role="tablist" aria-label="Game categories">
+          <button type="button" class="filter-tab active" data-filter="all" role="tab" aria-selected="true">All Titles</button>
+          <button type="button" class="filter-tab" data-filter="builtin" role="tab" aria-selected="false">Built-In Web Games</button>
+          <button type="button" class="filter-tab" data-filter="3d" role="tab" aria-selected="false">3D WebGL</button>
+          <button type="button" class="filter-tab" data-filter="bridge" role="tab" aria-selected="false">Desktop Bridge (External)</button>
+        </div>
+
+        <!-- Games Grid -->
+        <div class="games-grid">
+          
+          <!-- Game 1: Gaze Runner -->
+          <article class="game-card" data-category="builtin">
+            <div class="game-banner game-banner-runner">
+              <span class="game-banner-icon" aria-hidden="true">🏃💨</span>
+              <span class="game-type-badge badge-builtin">Direct In-App Game</span>
+            </div>
+            <div class="game-card-body">
+              <div class="game-card-title-row">
+                <h3>Gaze Runner</h3>
+                <span class="game-genre-tag">2D Endless Runner</span>
+              </div>
+              <p>
+                An original 3-lane endless runner rendered on HTML5 Canvas. Steer across tracks by gently turning your head left or right. Collect power tokens, avoid hurdles, and compete on the persistent leaderboard.
+              </p>
+              
+              <div class="game-spec-grid">
+                <div class="spec-cell">
+                  <span class="spec-label">Primary Input</span>
+                  <span class="spec-val">Lateral Head Yaw (ΔX)</span>
+                </div>
+                <div class="spec-cell">
+                  <span class="spec-label">Engine</span>
+                  <span class="spec-val">HTML5 Canvas 2D</span>
+                </div>
+                <div class="spec-cell">
+                  <span class="spec-label">Safeguard</span>
+                  <span class="spec-val">Face-Loss Auto-Pause</span>
+                </div>
+                <div class="spec-cell">
+                  <span class="spec-label">Fallback Input</span>
+                  <span class="spec-val">A / D or Arrow Keys</span>
+                </div>
+              </div>
+
+              <div class="game-card-footer">
+                <button type="button" class="btn btn-secondary btn-sm btn-game-details" data-game="runner" style="width: 100%;">
+                  View Specifications
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <!-- Game 2: Gaze Match -->
+          <article class="game-card" data-category="builtin">
+            <div class="game-banner game-banner-match">
+              <span class="game-banner-icon" aria-hidden="true">🧩✨</span>
+              <span class="game-type-badge badge-builtin">Direct In-App Game</span>
+            </div>
+            <div class="game-card-body">
+              <div class="game-card-title-row">
+                <h3>Gaze Match</h3>
+                <span class="game-genre-tag">Match-3 Puzzle Grid</span>
+              </div>
+              <p>
+                A tactical 8x8 match-3 puzzle game. Move a responsive floating virtual pointer with subtle head deflections and hold steady over any gem to dwell-select it. Move to an adjacent neighbor to execute the swap.
+              </p>
+              
+              <div class="game-spec-grid">
+                <div class="spec-cell">
+                  <span class="spec-label">Primary Input</span>
+                  <span class="spec-val">Virtual Cursor + Dwell</span>
+                </div>
+                <div class="spec-cell">
+                  <span class="spec-label">Engine</span>
+                  <span class="spec-val">HTML5 Canvas 2D</span>
+                </div>
+                <div class="spec-cell">
+                  <span class="spec-label">Accessibility</span>
+                  <span class="spec-val">Colorblind Symbols</span>
+                </div>
+                <div class="spec-cell">
+                  <span class="spec-label">Fallback Input</span>
+                  <span class="spec-val">Arrow Keys + Space</span>
+                </div>
+              </div>
+
+              <div class="game-card-footer">
+                <button type="button" class="btn btn-secondary btn-sm btn-game-details" data-game="match" style="width: 100%;">
+                  View Specifications
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <!-- Game 3: Gaze 3D Runner -->
+          <article class="game-card" data-category="3d">
+            <div class="game-banner game-banner-runner3d">
+              <span class="game-banner-icon" aria-hidden="true">🚅⚡</span>
+              <span class="game-type-badge badge-builtin">3D WebGL In-App</span>
+            </div>
+            <div class="game-card-body">
+              <div class="game-card-title-row">
+                <h3>Gaze 3D Runner</h3>
+                <span class="game-genre-tag">3D Cyber Corridor</span>
+              </div>
+              <p>
+                A futuristic 3D endless runner built with Vanilla Three.js WebGL. Shift across three perspective transit tracks with lateral head turns. Dodge transit pods, jump barriers, and collect energy coins with guaranteed open paths.
+              </p>
+              
+              <div class="game-spec-grid">
+                <div class="spec-cell">
+                  <span class="spec-label">Primary Input</span>
+                  <span class="spec-val">Lateral Yaw + Jump/Slide</span>
+                </div>
+                <div class="spec-cell">
+                  <span class="spec-label">Engine</span>
+                  <span class="spec-val">Vanilla Three.js WebGL</span>
+                </div>
+                <div class="spec-cell">
+                  <span class="spec-label">Guaranteed Path</span>
+                  <span class="spec-val">1+ Open Lane Always</span>
+                </div>
+                <div class="spec-cell">
+                  <span class="spec-label">Fallback Input</span>
+                  <span class="spec-val">W / A / S / D Keys</span>
+                </div>
+              </div>
+
+              <div class="game-card-footer">
+                <button type="button" class="btn btn-secondary btn-sm btn-game-details" data-game="runner3d" style="width: 100%;">
+                  View Specifications
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <!-- Game 4: Subway Surfers Desktop Bridge -->
+          <article class="game-card" data-category="bridge">
+            <div class="game-banner game-banner-bridge">
+              <span class="game-banner-icon" aria-hidden="true">🛹🚇</span>
+              <span class="game-type-badge badge-bridge">Desktop Bridge Daemon</span>
+            </div>
+            <div class="game-card-body">
+              <div class="game-card-title-row">
+                <h3>Subway Surfers</h3>
+                <span class="game-genre-tag">External Desktop Bridge</span>
+              </div>
+              <p>
+                Connects GazeMouse-OS to an external game window running on your Windows desktop. Dispatches DirectInput scancodes (Left, Right, Jump, Slide) via a local loopback WebSocket server.
+              </p>
+
+              <!-- Transparent Verified Research Status Notice -->
+              <div class="game-status-notice">
+                <strong>Project Status:</strong> Desktop bridge daemon, token handshake, safety watchdog, and scancode injection are verified by 54 automated unit tests. Routing keystrokes into live third-party browser windows is in active ongoing research.
+              </div>
+              
+              <div class="game-spec-grid">
+                <div class="spec-cell">
+                  <span class="spec-label">Connection</span>
+                  <span class="spec-val">ws://127.0.0.1:8765</span>
+                </div>
+                <div class="spec-cell">
+                  <span class="spec-label">Security</span>
+                  <span class="spec-val">NTFS Token Isolation</span>
+                </div>
+                <div class="spec-cell">
+                  <span class="spec-label">Safety Hotkey</span>
+                  <span class="spec-val">Ctrl + Alt + Q (E-Stop)</span>
+                </div>
+                <div class="spec-cell">
+                  <span class="spec-label">Watchdog</span>
+                  <span class="spec-val">2.0s Inactivity Lock</span>
+                </div>
+              </div>
+
+              <div class="game-card-footer">
+                <button type="button" class="btn btn-secondary btn-sm btn-game-details" data-game="bridge" style="width: 100%;">
+                  View Architecture Specs
+                </button>
+              </div>
+            </div>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ----------------------------------------------------------------------
+         Privacy and Accessibility Section
+         ---------------------------------------------------------------------- -->
+    <section id="privacy" class="privacy-section" aria-labelledby="privacy-title">
+      <div class="container">
+        
+        <div class="privacy-grid">
+          
+          <!-- Left: Privacy Architecture -->
+          <div class="privacy-card-main">
+            <div class="section-label">
+              <span class="dot"></span> Uncompromising Privacy
+            </div>
+            <h2 id="privacy-title">Zero Video Leaves Your Machine</h2>
+            <p class="privacy-lead">
+              GazeMouse-OS is engineered around strict local privacy principles. Your camera stream is never uploaded, recorded, or transmitted to any external server.
+            </p>
+
+            <div class="privacy-points-list">
+              
+              <div class="privacy-point">
+                <div class="privacy-point-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                  </svg>
+                </div>
+                <div class="privacy-point-content">
+                  <h4>100% On-Device WebAssembly Inference</h4>
+                  <p>
+                    All facial landmark estimation occurs locally in your browser's WebAssembly and WebGL execution context. Raw video frames exist solely in volatile client RAM.
+                  </p>
+                </div>
+              </div>
+
+              <div class="privacy-point">
+                <div class="privacy-point-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                  </svg>
+                </div>
+                <div class="privacy-point-content">
+                  <h4>Explicit Browser Permissions & No Accounts</h4>
+                  <p>
+                    No user accounts, subscriptions, or telemetry trackers exist. The webcam only activates after you explicitly click "Enable Camera", and you can revoke browser permissions at any time.
+                  </p>
+                </div>
+              </div>
+
+              <div class="privacy-point">
+                <div class="privacy-point-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polygon points="12 8 8 12 12 16 12 8"/>
+                  </svg>
+                </div>
+                <div class="privacy-point-content">
+                  <h4>Hardware Emergency Stop & Loopback Isolation</h4>
+                  <p>
+                    The optional desktop bridge binds strictly to localhost (<code>127.0.0.1</code>) and is protected by Windows NTFS user ACLs. Pressing <code>Ctrl + Alt + Q</code> anywhere instantly halts all input injection.
+                  </p>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Right: Accessibility Standards Checklist -->
+          <div class="accessibility-card-side">
+            <div class="section-label">
+              <span class="dot"></span> Inclusive Design
+            </div>
+            <h3>Accessibility Highlights</h3>
+            <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 20px; line-height: 1.6;">
+              GazeMouse-OS adheres to WCAG 2.1 AA accessibility guidelines to ensure a frictionless, dignified experience for all players:
+            </p>
+
+            <ul class="accessibility-list">
+              <li class="a11y-item">
+                <span class="a11y-check">✓</span>
+                <span><strong>High-Contrast Aesthetics:</strong> Exceeds 4.5:1 contrast ratios on all text and UI elements for effortless readability.</span>
+              </li>
+              <li class="a11y-item">
+                <span class="a11y-check">✓</span>
+                <span><strong>Visible Keyboard Focus:</strong> Distinct high-visibility focus indicators on all interactive controls for keyboard-only navigation.</span>
+              </li>
+              <li class="a11y-item">
+                <span class="a11y-check">✓</span>
+                <span><strong>Reduced Motion Support:</strong> Respects the system <code>prefers-reduced-motion</code> setting, disabling ambient motion effects and loops.</span>
+              </li>
+              <li class="a11y-item">
+                <span class="a11y-check">✓</span>
+                <span><strong>Adjustable Dead-Zones:</strong> Fine-tune resting sensitivity thresholds to match individual comfort and prevent neck strain.</span>
+              </li>
+              <li class="a11y-item">
+                <span class="a11y-check">✓</span>
+                <span><strong>Auto-Pause Protection:</strong> Games automatically freeze if the face leaves the webcam frame, preventing accidental losses.</span>
+              </li>
+              <li class="a11y-item">
+                <span class="a11y-check">✓</span>
+                <span><strong>Keyboard Fallback Controls:</strong> Every game includes fully mapped keyboard controls as an alternative to head movement.</span>
+              </li>
+            </ul>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ----------------------------------------------------------------------
+         Final Call to Action Section
+         ---------------------------------------------------------------------- -->
+    <section class="cta-section" aria-labelledby="cta-title">
+      <div class="container">
+        <div class="cta-box">
+          <div class="section-label" style="margin-bottom: 16px;">
+            <span class="dot"></span> Open Access Initiative
+          </div>
+          <h2 id="cta-title">Ready to Experience Gaming Differently?</h2>
+          <p>
+            Discover a hands-free approach to gaming with GazeMouse-OS.
+          </p>
+          <div class="cta-actions">
+            <a href="#features" class="btn btn-glow btn-lg">Explore the Features</a>
+            <a href="#how-it-works" class="btn btn-secondary btn-lg">Review Technical Pipeline</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================================================
+       Footer
+       ======================================================================== -->
+  <footer class="footer" role="contentinfo">
+    <div class="container">
+      
+      <div class="footer-top">
+        <!-- Brand Summary -->
+        <div class="footer-brand">
+          <a href="#hero" class="brand-link" style="margin-bottom: 8px;">
+            <img src="assets/logo.svg" alt="GazeMouse-OS" width="32" height="32" style="border-radius: 6px;">
+            <span class="brand-title">GazeMouse-OS</span>
+          </a>
+          <p>
+            An accessibility-first gaming and assistive-control system designed to empower players with limited upper-limb or motor mobility to navigate applications and play games using comfortable, customizable head gestures.
+          </p>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="footer-nav-col">
+          <h4>Navigation</h4>
+          <ul class="footer-links">
+            <li><a href="#hero">Overview</a></li>
+            <li><a href="#features">Features</a></li>
+            <li><a href="#how-it-works">How It Works</a></li>
+            <li><a href="#games">Games Catalog</a></li>
+            <li><a href="#privacy">Privacy & Safety</a></li>
+          </ul>
+        </div>
+
+        <!-- Technology Pillars -->
+        <div class="footer-nav-col">
+          <h4>Architecture</h4>
+          <ul class="footer-links">
+            <li><a href="#how-it-works">MediaPipe Face Vision</a></li>
+            <li><a href="#how-it-works">WebAssembly & WebGL</a></li>
+            <li><a href="#games">HTML5 Canvas & Three.js</a></li>
+            <li><a href="#privacy">Python Desktop Bridge</a></li>
+            <li><a href="#privacy">Emergency Stop Guard</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div class="footer-copy">
+          &copy; 2026 GazeMouse-OS Project. Developed with an accessibility-first mindset.
+        </div>
+        <div class="footer-tech-stack">
+          <span class="tech-badge-sm">React 19 / Vite</span>
+          <span class="tech-badge-sm">Google MediaPipe</span>
+          <span class="tech-badge-sm">Three.js</span>
+          <span class="tech-badge-sm">Python 3 Win32</span>
+        </div>
+      </div>
+
+    </div>
+  </footer>
+
+  <!-- ========================================================================
+       Game Specifications Modal Dialog
+       ======================================================================== -->
+  <div id="game-spec-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-game-title" aria-hidden="true">
+    <div class="modal-window">
+      <button type="button" class="modal-close-btn" aria-label="Close dialog">&times;</button>
+      <h3 id="modal-game-title" style="font-size: 1.45rem; margin-bottom: 12px; color: #ffffff;">Game Specifications</h3>
+      <div id="modal-game-body">
+        <!-- Dynamically injected via app.js -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Logic -->
+  <script src="app.js"></script>
+</body>
+</html>
