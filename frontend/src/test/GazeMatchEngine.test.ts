@@ -2,6 +2,15 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { MatchEngine } from '../games/match/matchEngine'
 import type { TileType, MatchTile } from '../games/match/types'
 
+// Deterministic Linear Congruential Generator for reproducible test runs
+function createSeededRng(seed = 42) {
+  let s = seed
+  return () => {
+    s = (s * 1664525 + 1013904223) % 4294967296
+    return s / 4294967296
+  }
+}
+
 describe('Gaze Match — Pure Engine & Puzzle Logic', () => {
   let engine: MatchEngine
 
@@ -9,6 +18,7 @@ describe('Gaze Match — Pure Engine & Puzzle Logic', () => {
     engine = new MatchEngine({
       gridRows: 6,
       gridCols: 6,
+      rng: createSeededRng(12345),
       targetScore: 1500,
       maxMoves: 20,
     })

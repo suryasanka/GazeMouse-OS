@@ -10,6 +10,7 @@ import { useSettings } from '../../context/SettingsContext'
 import { Runner3DEngine } from './runner3dEngine'
 import { ThreeRenderer } from './threeRenderer'
 import { soundEffects } from './soundEffects'
+import { SessionTracker } from '../../services/sessionTracker'
 import type { GameState, PauseReason } from './types'
 
 interface Gaze3DRunnerProps {
@@ -39,6 +40,7 @@ export const Gaze3DRunner: React.FC<Gaze3DRunnerProps> = ({
   const rendererRef = useRef<ThreeRenderer | null>(null)
   const animFrameIdRef = useRef<number | null>(null)
   const lastTimeRef = useRef<number>(0)
+  const sessionTrackerRef = useRef<SessionTracker>(new SessionTracker('GAZE_3D_RUNNER', null))
 
   // Synced React UI state for overlays and HUD
   const [gameState, setGameState] = useState<GameState>('MENU')
@@ -58,6 +60,25 @@ export const Gaze3DRunner: React.FC<Gaze3DRunnerProps> = ({
   })
   const [playerLane, setPlayerLane] = useState<0 | 1 | 2>(1)
   const [verticalState, setVerticalState] = useState<'GROUNDED' | 'JUMPING' | 'SLIDING'>('GROUNDED')
+
+  const getRunner3DMetrics = () => ({
+    score: engineRef.current?.stats.score ?? 0,
+    coinsCollected: engineRef.current?.stats.coins ?? 0,
+    distanceMeters: Number((engineRef.current?.stats.distance ?? 0).toFixed(2)),
+    speedMPerSec: Number((engineRef.current?.stats.speed ?? 0).toFixed(2)),
+  })
+
+  // Lifecycle mount & unmount: register live metrics provider and handle unmount INTERRUPTED
+  useEffect(() => {
+    const unregisterProvider = sessionTrackerRef.current.registerMetricsProvider(getRunner3DMetrics)
+    return () => {
+      unregisterProvider()
+      if (sessionTrackerRef.current.isSessionActive()) {
+        sessionTrackerRef.current.submitSession('INTERRUPTED', getRunner3DMetrics())
+      }
+      sessionTrackerRef.current.dispose()
+    }
+  }, [])
 
   // Synchronize React state from game engine
   const syncStateFromEngine = useCallback(() => {
@@ -244,11 +265,18 @@ export const Gaze3DRunner: React.FC<Gaze3DRunnerProps> = ({
         }
 
         if (engine.state === 'PLAYING') {
+          sessionTrackerRef.current.addActiveDuration(dt)
           setStats({ ...engine.stats })
           setPlayerLane(engine.player.targetLane)
           setVerticalState(engine.player.verticalState)
         } else if (engine.state === 'GAME_OVER' && gameStateRef.current !== 'GAME_OVER') {
           soundEffects.playCrash(settingsRef.current.soundEnabled)
+          sessionTrackerRef.current.submitSession('COMPLETED', {
+            score: engine.stats.score,
+            coinsCollected: engine.stats.coins,
+            distanceMeters: Number(engine.stats.distance.toFixed(2)),
+            speedMPerSec: Number(engine.stats.speed.toFixed(2)),
+          })
           syncStateFromEngineRef.current()
         }
       }
@@ -307,10 +335,17 @@ export const Gaze3DRunner: React.FC<Gaze3DRunnerProps> = ({
           engine.resume()
           syncStateFromEngineRef.current()
         } else if (engine.state === 'MENU' || engine.state === 'GAME_OVER') {
+          sessionTrackerRef.current.startSession()
           engine.start()
           syncStateFromEngineRef.current()
         }
       } else if (e.code === 'KeyR') {
+        sessionTrackerRef.current.restartSession({
+          score: engine.stats.score,
+          coinsCollected: engine.stats.coins,
+          distanceMeters: Number(engine.stats.distance.toFixed(2)),
+          speedMPerSec: Number(engine.stats.speed.toFixed(2)),
+        })
         engine.reset()
         engine.start()
         syncStateFromEngineRef.current()
@@ -329,6 +364,7 @@ export const Gaze3DRunner: React.FC<Gaze3DRunnerProps> = ({
   // Control handlers
   const handleStartGame = () => {
     resetGestures?.()
+    sessionTrackerRef.current.startSession()
     engineRef.current?.start()
     syncStateFromEngine()
   }
@@ -372,8 +408,21 @@ export const Gaze3DRunner: React.FC<Gaze3DRunnerProps> = ({
     }
   }
 
+  const handleExit = () => {
+    if (sessionTrackerRef.current.isSessionActive()) {
+      sessionTrackerRef.current.submitSession('ABANDONED', {
+        score: engineRef.current?.stats.score ?? 0,
+        coinsCollected: engineRef.current?.stats.coins ?? 0,
+        distanceMeters: Number((engineRef.current?.stats.distance ?? 0).toFixed(2)),
+        speedMPerSec: Number((engineRef.current?.stats.speed ?? 0).toFixed(2)),
+      })
+    }
+    onExit()
+  }
+
   const handleRestart = () => {
     resetGestures?.()
+    sessionTrackerRef.current.restartSession(getRunner3DMetrics())
     engineRef.current?.reset()
     engineRef.current?.start()
     syncStateFromEngine()
@@ -384,7 +433,7 @@ export const Gaze3DRunner: React.FC<Gaze3DRunnerProps> = ({
       {/* Top Header Navigation & Controls */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <Button variant="outline" size="sm" onClick={onExit}>
+          <Button variant="outline" size="sm" onClick={handleExit}>
             ← Back to Games
           </Button>
           <h1 style={{ fontSize: '1.75rem', color: 'var(--color-deep-blue)', margin: 0 }}>

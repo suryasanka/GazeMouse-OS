@@ -9,6 +9,7 @@ import { useTracking } from '../../context/TrackingContext'
 import { useSettings } from '../../context/SettingsContext'
 import { RunnerEngine } from './gameEngine'
 import { RunnerRenderer } from './canvasRenderer'
+import { SessionTracker } from '../../services/sessionTracker'
 import type { GameState, PauseReason } from './types'
 
 interface GazeRunnerProps {
@@ -25,6 +26,7 @@ export const GazeRunner: React.FC<GazeRunnerProps> = ({
   const rendererRef = useRef<RunnerRenderer | null>(null)
   const animFrameIdRef = useRef<number | null>(null)
   const lastTimeRef = useRef<number>(performance.now())
+  const sessionTrackerRef = useRef<SessionTracker>(new SessionTracker('GAZE_RUNNER', null))
 
   const { trackingData, isCameraActive } = useTracking()
   const { settings } = useSettings()
@@ -41,6 +43,25 @@ export const GazeRunner: React.FC<GazeRunnerProps> = ({
     highScore: 0,
   })
   const [playerLane, setPlayerLane] = useState<0 | 1 | 2>(1)
+
+  const getRunnerMetrics = () => ({
+    score: engineRef.current?.stats.score ?? 0,
+    coinsCollected: engineRef.current?.stats.coins ?? 0,
+    distancePixels: Math.round(engineRef.current?.stats.distance ?? 0),
+    speedPxPerSec: Number((engineRef.current?.stats.speed ?? 0).toFixed(2)),
+  })
+
+  // Lifecycle mount & unmount: register live metrics provider and handle unmount INTERRUPTED
+  useEffect(() => {
+    const unregisterProvider = sessionTrackerRef.current.registerMetricsProvider(getRunnerMetrics)
+    return () => {
+      unregisterProvider()
+      if (sessionTrackerRef.current.isSessionActive()) {
+        sessionTrackerRef.current.submitSession('INTERRUPTED', getRunnerMetrics())
+      }
+      sessionTrackerRef.current.dispose()
+    }
+  }, [])
 
   // Initialize pure game engine
   if (!engineRef.current) {
@@ -134,9 +155,16 @@ export const GazeRunner: React.FC<GazeRunnerProps> = ({
 
         // Sync React HUD state periodically
         if (engine.state === 'PLAYING') {
+          sessionTrackerRef.current.addActiveDuration(dt)
           setStats({ ...engine.stats })
           setPlayerLane(engine.player.targetLane)
         } else if (engine.state === 'GAME_OVER' && gameState !== 'GAME_OVER') {
+          sessionTrackerRef.current.submitSession('COMPLETED', {
+            score: engine.stats.score,
+            coinsCollected: engine.stats.coins,
+            distancePixels: Math.round(engine.stats.distance),
+            speedPxPerSec: Number(engine.stats.speed.toFixed(2)),
+          })
           syncStateFromEngine()
         }
       }
@@ -181,10 +209,17 @@ export const GazeRunner: React.FC<GazeRunnerProps> = ({
           engine.resume()
           syncStateFromEngine()
         } else if (engine.state === 'MENU' || engine.state === 'GAME_OVER') {
+          sessionTrackerRef.current.startSession()
           engine.start()
           syncStateFromEngine()
         }
       } else if (e.code === 'KeyR') {
+        sessionTrackerRef.current.restartSession({
+          score: engine.stats.score,
+          coinsCollected: engine.stats.coins,
+          distancePixels: Math.round(engine.stats.distance),
+          speedPxPerSec: Number(engine.stats.speed.toFixed(2)),
+        })
         engine.reset()
         engine.start()
         syncStateFromEngine()
@@ -202,6 +237,7 @@ export const GazeRunner: React.FC<GazeRunnerProps> = ({
 
   // Control handlers
   const handleStartGame = () => {
+    sessionTrackerRef.current.startSession()
     engineRef.current?.start()
     syncStateFromEngine()
   }
@@ -229,7 +265,20 @@ export const GazeRunner: React.FC<GazeRunnerProps> = ({
     }
   }
 
+  const handleExit = () => {
+    if (sessionTrackerRef.current.isSessionActive()) {
+      sessionTrackerRef.current.submitSession('ABANDONED', {
+        score: engineRef.current?.stats.score ?? 0,
+        coinsCollected: engineRef.current?.stats.coins ?? 0,
+        distancePixels: Math.round(engineRef.current?.stats.distance ?? 0),
+        speedPxPerSec: Number((engineRef.current?.stats.speed ?? 0).toFixed(2)),
+      })
+    }
+    onExit()
+  }
+
   const handleRestart = () => {
+    sessionTrackerRef.current.restartSession(getRunnerMetrics())
     engineRef.current?.reset()
     engineRef.current?.start()
     syncStateFromEngine()
@@ -240,7 +289,7 @@ export const GazeRunner: React.FC<GazeRunnerProps> = ({
       {/* Top Header Navigation & Controls */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <Button variant="outline" size="sm" onClick={onExit}>
+          <Button variant="outline" size="sm" onClick={handleExit}>
             ← Back to Games
           </Button>
           <h1 style={{ fontSize: '1.75rem', color: 'var(--color-deep-blue)', margin: 0 }}>

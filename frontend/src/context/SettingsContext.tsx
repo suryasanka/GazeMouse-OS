@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useState, useEffect } from 'react'
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react'
 import type { UserSettings } from '../types/settings'
 import { DEFAULT_SETTINGS } from '../types/settings'
+import { fetchRemotePreferences, saveRemotePreferences } from '../services/backendApi'
 
 const SETTINGS_STORAGE_KEY = 'gazemouse_user_settings_v1'
 
@@ -28,7 +29,29 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return DEFAULT_SETTINGS
   })
 
-  // Apply theme & reduced motion attributes to the root DOM document
+  // Timestamp of the latest local modification to prevent stale backend responses
+  const lastLocalUpdateRef = useRef<number>(0)
+
+  // 1. Fetch remote preferences from backend on mount (non-blocking)
+  useEffect(() => {
+    let isMounted = true
+    const fetchStartTime = Date.now()
+
+    fetchRemotePreferences().then((remoteSettings) => {
+      if (!isMounted || !remoteSettings) return
+      // Prevent stale response from overwriting newer local user changes
+      if (lastLocalUpdateRef.current > fetchStartTime) return
+
+      setSettings(remoteSettings)
+      saveToStorage(remoteSettings)
+    })
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  // 2. Apply theme & reduced motion attributes to the root DOM document
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', settings.theme)
     document.documentElement.setAttribute('data-reduced-motion', settings.reducedMotion ? 'true' : 'false')
@@ -44,16 +67,20 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }
 
   const updateSetting = <K extends keyof UserSettings>(key: K, value: UserSettings[K]) => {
+    lastLocalUpdateRef.current = Date.now()
     setSettings((prev) => {
       const updated = { ...prev, [key]: value }
       saveToStorage(updated)
+      saveRemotePreferences(updated)
       return updated
     })
   }
 
   const resetSettings = () => {
+    lastLocalUpdateRef.current = Date.now()
     setSettings(DEFAULT_SETTINGS)
     saveToStorage(DEFAULT_SETTINGS)
+    saveRemotePreferences(DEFAULT_SETTINGS)
   }
 
   const exportSettings = (): string => {
@@ -74,8 +101,10 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         reducedMotion: Boolean(parsed.reducedMotion),
         highContrast: Boolean(parsed.highContrast),
       }
+      lastLocalUpdateRef.current = Date.now()
       setSettings(merged)
       saveToStorage(merged)
+      saveRemotePreferences(merged)
       return true
     } catch (e) {
       console.error('Invalid settings JSON format:', e)

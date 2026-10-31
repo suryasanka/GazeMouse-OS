@@ -650,8 +650,9 @@ class BridgeServer:
             if not self.window_watcher.is_foreground_allowed():
                 current_title = self.window_watcher.get_foreground_window_title()
                 logger.warning(
-                    f"Action '{action}' rejected: Foreground window '{current_title}' not in allowlist."
+                    f"Action '{action}' rejected: Foreground window '{current_title}' not in allowlist. Disabling input."
                 )
+                self.state = STATE_DISABLED
                 self.input_dispatcher.release_all_held_keys()
                 self._send_ws_text(
                     writer,
@@ -661,6 +662,7 @@ class BridgeServer:
                         {"reason": "Foreground window not allowed", "activeTitle": current_title[:80]},
                     ),
                 )
+                self.broadcast_status("FOREGROUND_NOT_ALLOWED")
                 return
 
             # Safety Gate 3: Action cooldown enforcement

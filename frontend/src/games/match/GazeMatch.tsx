@@ -9,6 +9,7 @@ import { useTracking } from '../../context/TrackingContext'
 import { useSettings } from '../../context/SettingsContext'
 import { MatchEngine } from './matchEngine'
 import { MatchRenderer } from './canvasRenderer'
+import { SessionTracker } from '../../services/sessionTracker'
 import type { GameState, PauseReason, GridPosition, DwellState, CursorPosition } from './types'
 import { TILE_DEFINITIONS } from './types'
 
@@ -26,6 +27,7 @@ export const GazeMatch: React.FC<GazeMatchProps> = ({
   const rendererRef = useRef<MatchRenderer | null>(null)
   const animFrameIdRef = useRef<number | null>(null)
   const lastTimeRef = useRef<number>(performance.now())
+  const sessionTrackerRef = useRef<SessionTracker>(new SessionTracker('GAZE_MATCH', 'CHALLENGE'))
 
   const { trackingData, isCameraActive } = useTracking()
   const { settings } = useSettings()
@@ -59,6 +61,27 @@ export const GazeMatch: React.FC<GazeMatchProps> = ({
   })
   // Screen-reader live region announcement
   const [announcement, setAnnouncement] = useState<string>('Gaze Match ready. Select a tile to begin.')
+
+  const getMatchMetrics = () => ({
+    score: engineRef.current?.stats.score ?? 0,
+    movesMade: engineRef.current?.stats.movesMade ?? 0,
+    matchesCount: engineRef.current?.stats.matchesCount ?? 0,
+    movesRemaining: engineRef.current?.stats.movesRemaining ?? 0,
+    targetScore: engineRef.current?.stats.targetScore ?? 1500,
+    isWin: engineRef.current?.stats.isWin ?? false,
+  })
+
+  // Lifecycle mount & unmount: register live metrics provider and handle unmount INTERRUPTED
+  useEffect(() => {
+    const unregisterProvider = sessionTrackerRef.current.registerMetricsProvider(getMatchMetrics)
+    return () => {
+      unregisterProvider()
+      if (sessionTrackerRef.current.isSessionActive()) {
+        sessionTrackerRef.current.submitSession('INTERRUPTED', getMatchMetrics())
+      }
+      sessionTrackerRef.current.dispose()
+    }
+  }, [])
 
   // Initialize pure puzzle engine
   if (!engineRef.current) {
@@ -185,8 +208,16 @@ export const GazeMatch: React.FC<GazeMatchProps> = ({
       setFocusedTile(targetPos)
       syncStateFromEngine()
 
-      // Evaluate win/loss sound
+      // Evaluate win/loss sound & submit session telemetry
       if (engine.isGameOver()) {
+        sessionTrackerRef.current.submitSession('COMPLETED', {
+          score: engine.stats.score,
+          movesMade: engine.stats.movesMade,
+          matchesCount: engine.stats.matchesCount,
+          movesRemaining: engine.stats.movesRemaining,
+          targetScore: engine.stats.targetScore,
+          isWin: engine.stats.isWin,
+        })
         if (engine.stats.isWin) {
           playSoundCue('win')
         } else {
@@ -351,6 +382,9 @@ export const GazeMatch: React.FC<GazeMatchProps> = ({
       const renderer = rendererRef.current
 
       if (engine && renderer) {
+        if (engine.state === 'PLAYING') {
+          sessionTrackerRef.current.addActiveDuration(dt)
+        }
         renderer.render(
           engine,
           selectedTile,
@@ -405,6 +439,7 @@ export const GazeMatch: React.FC<GazeMatchProps> = ({
           engine.resume()
           syncStateFromEngine()
         } else if (engine.state === 'MENU' || engine.state === 'GAME_OVER') {
+          sessionTrackerRef.current.startSession()
           engine.start()
           syncStateFromEngine()
         }
@@ -426,6 +461,14 @@ export const GazeMatch: React.FC<GazeMatchProps> = ({
         }
         syncStateFromEngine()
       } else if (e.code === 'KeyR') {
+        sessionTrackerRef.current.restartSession({
+          score: engine.stats.score,
+          movesMade: engine.stats.movesMade,
+          matchesCount: engine.stats.matchesCount,
+          movesRemaining: engine.stats.movesRemaining,
+          targetScore: engine.stats.targetScore,
+          isWin: engine.stats.isWin,
+        })
         engine.reset()
         engine.start()
         setSelectedTile(null)
@@ -440,6 +483,7 @@ export const GazeMatch: React.FC<GazeMatchProps> = ({
 
   // Button handlers
   const handleStartGame = () => {
+    sessionTrackerRef.current.startSession()
     engineRef.current?.start()
     setSelectedTile(null)
     syncStateFromEngine()
@@ -457,7 +501,22 @@ export const GazeMatch: React.FC<GazeMatchProps> = ({
     syncStateFromEngine()
   }
 
+  const handleExit = () => {
+    if (sessionTrackerRef.current.isSessionActive()) {
+      sessionTrackerRef.current.submitSession('ABANDONED', {
+        score: engineRef.current?.stats.score ?? 0,
+        movesMade: engineRef.current?.stats.movesMade ?? 0,
+        matchesCount: engineRef.current?.stats.matchesCount ?? 0,
+        movesRemaining: engineRef.current?.stats.movesRemaining ?? 0,
+        targetScore: engineRef.current?.stats.targetScore ?? 1500,
+        isWin: engineRef.current?.stats.isWin ?? false,
+      })
+    }
+    onExit()
+  }
+
   const handleRestart = () => {
+    sessionTrackerRef.current.restartSession(getMatchMetrics())
     engineRef.current?.reset()
     engineRef.current?.start()
     setSelectedTile(null)
@@ -485,7 +544,7 @@ export const GazeMatch: React.FC<GazeMatchProps> = ({
       {/* Top Header Navigation & Controls */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <Button variant="outline" size="sm" onClick={onExit}>
+          <Button variant="outline" size="sm" onClick={handleExit}>
             ← Back to Games
           </Button>
           <h1 style={{ fontSize: '1.75rem', color: 'var(--color-deep-blue)', margin: 0 }}>

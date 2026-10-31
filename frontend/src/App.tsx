@@ -16,6 +16,7 @@ import { AccessibilityPage } from './pages/AccessibilityPage'
 import { HelpSupportPage } from './pages/HelpSupportPage'
 
 import './App.css'
+import { initTelemetryQueue } from './services/telemetryQueue'
 
 interface AppContentProps {
   onNavigateToLanding?: () => void
@@ -159,6 +160,12 @@ export const App: React.FC<AppProps> = ({ initialView }) => {
 
     window.addEventListener('popstate', handlePopState)
     return () => window.removeEventListener('popstate', handlePopState)
+  }, [])
+
+  // Initialize persistent offline telemetry queue with automatic background drain
+  useEffect(() => {
+    const cleanupQueue = initTelemetryQueue()
+    return () => cleanupQueue()
   }, [])
 
   const handleNavigateToApp = () => {

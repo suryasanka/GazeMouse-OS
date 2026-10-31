@@ -8,6 +8,7 @@ import { GamepadIcon, CameraIcon, CloseIcon } from '../components/common/Icons'
 import { GazeRunner } from '../games/runner/GazeRunner'
 import { GazeMatch } from '../games/match/GazeMatch'
 import { SubwaySurfersBridgeController } from '../games/external/SubwaySurfersBridgeController'
+import { PlayerStatsDashboard } from '../components/common/PlayerStatsDashboard'
 
 const Gaze3DRunner = React.lazy(() => import('../games/runner3d/Gaze3DRunner'))
 
@@ -101,6 +102,9 @@ export const GamesPage: React.FC<GamesPageProps> = ({ onNavigate = () => {} }) =
       >
         To play using head gestures, you will calibrate your neutral resting position in Camera Setup. Playable Canvas engines will be unlocked in Phase 3 (Gaze Runner) and Phase 4 (Gaze Match) after the tracking pipeline is integrated.
       </Alert>
+
+      {/* Player Statistics Dashboard */}
+      <PlayerStatsDashboard />
 
       {/* 2-Column Game Grid */}
       <div
